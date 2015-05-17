@@ -17,7 +17,7 @@ import static org.mockito.Mockito.*
  */
 class FluentSourceAutoCloseableTest {
 
-    List<BufferedReader> allOpenedReaders
+    List<Reader> allOpenedReaders
 
     @Before
     public void setUp() throws Exception {
@@ -102,10 +102,10 @@ class FluentSourceAutoCloseableTest {
         doAnswer(new Answer() {
             @Override
             Object answer(InvocationOnMock invocation) throws Throwable {
-                allOpenedReaders << spy((BufferedReader) invocation.callRealMethod())
+                allOpenedReaders << spy(new BufferedReader((Reader)invocation.callRealMethod()))
                 allOpenedReaders.last()
             }
-        }).when(spiedSource).openBufferedStream()
+        }).when(spiedSource).openStream()
         spiedSource
     }
 }

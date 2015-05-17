@@ -105,4 +105,11 @@ class FluentSourceTest {
             it.write(content)
         }
     }
+
+    @Test
+    public void "will support regex delimeters"() throws Exception {
+        assert ['a', ' b', ' c'] == FluentSource.on(srcOf('a, b, c'), ',').readAll()
+        assert ['a', '', 'b', '', 'c'] == FluentSource.on(srcOf('a, b, c'), ~/[,\s]/).readAll()
+        assert [' ',' '] == FluentSource.on(srcOf('a, b, c'), ~/\S+/).readAll()
+    }
 }

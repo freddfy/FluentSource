@@ -7,16 +7,12 @@ import java.util.Iterator;
 /**
  * Author:  Fred Deng
  */
-public class CloseableIteratorAuto<T> implements CloseableIterator<T> {
+public class CloseableIteratorAdaptor<T> implements CloseableIterator<T> {
 
     private final Iterator<T> delegate;
     private final AutoCloseable closeable;
 
-    public CloseableIteratorAuto(CloseableIterator<T> closeableIterator) {
-        this(closeableIterator, closeableIterator);
-    }
-
-    public CloseableIteratorAuto(Iterator<T> delegate, AutoCloseable closeable) {
+    public CloseableIteratorAdaptor(Iterator<T> delegate, AutoCloseable closeable) {
         this.delegate = delegate;
         this.closeable = closeable;
     }
