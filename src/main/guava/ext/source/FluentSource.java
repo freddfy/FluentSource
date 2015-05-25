@@ -33,7 +33,7 @@ public abstract class FluentSource<T> {
             public CloseableIterator<String> openIterator() {
                 try {
                     Scanner scanner = new Scanner(source.openStream()).useDelimiter(delimeter);
-                    return new CloseableIteratorAdaptor<>(scanner, scanner);
+                    return new CloseableIteratorAdaptor<String>(scanner, scanner);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -88,15 +88,27 @@ public abstract class FluentSource<T> {
     public abstract CloseableIterator<T> openIterator();
 
     public List<T> readAll() {
-        try (CloseableIterator<T> iter = openIterator()) {
+        CloseableIterator<T> iter = null;
+        try {
+            iter = openIterator();
             return ImmutableList.copyOf(iter);
+        } finally {
+            if (iter != null) {
+                iter.close();
+            }
         }
     }
 
     public <R> R readAll(SourceProcessor<T, R> processor) {
-        try (CloseableIterator<T> iter = openIterator()) {
+        CloseableIterator<T> iter = null;
+        try{
+            iter = openIterator();
             while (iter.hasNext()) {
                 processor.process(iter.next());
+            }
+        } finally {
+            if (iter != null) {
+                iter.close();
             }
         }
         return processor.getResult();
@@ -112,7 +124,7 @@ public abstract class FluentSource<T> {
             public CloseableIterator<T2> openIterator() {
                 Function<T, T2> function = functionSupplier.get();
                 CloseableIterator<T> origIter = origIter();
-                return new CloseableIteratorAdaptor<>(Iterators.transform(origIter, function), origIter);
+                return new CloseableIteratorAdaptor<T2>(Iterators.transform(origIter, function), origIter);
             }
         };
     }
@@ -126,7 +138,7 @@ public abstract class FluentSource<T> {
             @Override
             public CloseableIterator<T> openIterator() {
                 CloseableIterator<T> origIter = origIter();
-                return new CloseableIteratorAdaptor<>(Iterators.filter(origIter, predicate), origIter);
+                return new CloseableIteratorAdaptor<T>(Iterators.filter(origIter, predicate), origIter);
 
             }
         };
@@ -142,8 +154,8 @@ public abstract class FluentSource<T> {
 
             @Override
             public CloseableIterator<T> openIterator() {
-                ToAutoClosingIterator<T> closingIterators = new ToAutoClosingIterator<>();
-                return new CloseableIteratorAdaptor<>(Iterators.concat(Iterators.transform(sources.iterator(), closingIterators)), closingIterators);
+                ToAutoClosingIterator<T> closingIterators = new ToAutoClosingIterator<T>();
+                return new CloseableIteratorAdaptor<T>(Iterators.concat(Iterators.transform(sources.iterator(), closingIterators)), closingIterators);
             }
         };
     }
@@ -174,7 +186,7 @@ public abstract class FluentSource<T> {
             }
             CloseableIterator<? extends T> curr = input.openIterator();
             opened.add(curr);
-            return new CloseableIteratorDecorator<>(curr);
+            return new CloseableIteratorDecorator<T>(curr);
         }
 
     }

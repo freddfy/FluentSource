@@ -27,4 +27,14 @@ class FluentSourceCsvTest {
     public void "csv source works fine even if there is empty string in the value lines"() throws Exception {
         assert FluentSource.onCsv(CharSource.wrap('a,b,c,d\n1,,3,')).readAll() == [['a':'1','b':'','c':'3','d':'']]
     }
+
+    @Test
+    public void "single empty column works"() throws Exception {
+        FluentSource.onCsv(CharSource.wrap('a\n1\n\n3')).readAll() == [['a':'1'], ['a':''],['a':'3']]
+    }
+
+    @Test
+    public void "empty header single column still works"() throws Exception {
+        FluentSource.onCsv(CharSource.wrap('\n\n\n1')).readAll() == [['':''], ['':''],['':'1']]
+    }
 }
