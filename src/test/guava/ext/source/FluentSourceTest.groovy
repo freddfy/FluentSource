@@ -26,9 +26,9 @@ class FluentSourceTest {
 
     @Test
     public void "can convert from CharSource to FluentSource"() throws Exception {
-        assert ['1','2','3'] == FluentSource.byLines(srcOf('1\n2\n3\n')).readAll()
+        assert ['1','2','3'] == FluentSource.onLines(srcOf('1\n2\n3\n')).readAll()
 
-        assert ['1','2','3'] == FluentSource.byLines(srcOf('1\n2\n3')).readAll()
+        assert ['1','2','3'] == FluentSource.onLines(srcOf('1\n2\n3')).readAll()
     }
 
     static Function<String, Integer> toInteger() {
@@ -42,12 +42,12 @@ class FluentSourceTest {
 
     @Test(expected=NumberFormatException)
     public void "will fail fast if any exception happens when converting from CharSource to FuentSource"() throws Exception {
-        FluentSource.byLines(srcOf('1\nb\n3\n')).transform(toInteger()).readAll()
+        FluentSource.onLines(srcOf('1\nb\n3\n')).transform(toInteger()).readAll()
     }
 
     @Test
     public void "can process all sources and return result"() throws Exception {
-        assert 6 == FluentSource.byLines(srcOf('1\n2\n3\n')).transform(toInteger()).readAll(new SourceProcessor<Integer, Integer>() {
+        assert 6 == FluentSource.onLines(srcOf('1\n2\n3\n')).transform(toInteger()).readAll(new SourceProcessor<Integer, Integer>() {
             int sum = 0;
             @Override
             void process(Integer input) {
@@ -67,19 +67,19 @@ class FluentSourceTest {
 
     @Test
     public void "can transform to another FluentSource"() throws Exception {
-        assert [1,2,3] == FluentSource.byLines(srcOf('1\n2\n3')).transform(toInteger()).readAll()
+        assert [1,2,3] == FluentSource.onLines(srcOf('1\n2\n3')).transform(toInteger()).readAll()
     }
 
     @Test
     public void "can filter to another FluentSource"() throws Exception {
-        assert [2] == FluentSource.byLines(srcOf('1\n2\n3')).transform(toInteger()).filter({it%2 == 0} as Predicate).readAll()
+        assert [2] == FluentSource.onLines(srcOf('1\n2\n3')).transform(toInteger()).filter({it%2 == 0} as Predicate).readAll()
     }
 
     @Test
     public void "can concat FluentSources"() throws Exception {
         file = Files.createTempFile('source', 'txt').toFile()
-        FluentSource<String> source1 = FluentSource.byLines(asCharSource(file, Charsets.UTF_8))
-        FluentSource<String> source2 = FluentSource.byLines(srcOf('3'))
+        FluentSource<String> source1 = FluentSource.onLines(asCharSource(file, Charsets.UTF_8))
+        FluentSource<String> source2 = FluentSource.onLines(srcOf('3'))
 
         updateFile('1\n')
         assert ['1','3'] == FluentSource.concat(source1, source2).readAll()
@@ -91,7 +91,7 @@ class FluentSourceTest {
     @Test
     public void "will detect the underlying source change"() throws Exception {
         file = Files.createTempFile('source', 'txt').toFile()
-        def subject = FluentSource.byLines(asCharSource(file, Charsets.UTF_8)).transform(toInteger())
+        def subject = FluentSource.onLines(asCharSource(file, Charsets.UTF_8)).transform(toInteger())
 
         updateFile('1\n2\n')
         assert [1,2] == subject.readAll()

@@ -88,7 +88,7 @@ class FluentSourceAutoCloseableTest {
     }
 
     private FluentSource<String> subjectOf(String content) {
-        FluentSource.byLines(spyOpenStream(CharSource.wrap(content)))
+        FluentSource.onLines(spyOpenStream(CharSource.wrap(content)))
     }
 
     private verifyAllOpenedReadersClosed() {

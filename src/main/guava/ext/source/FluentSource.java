@@ -1,8 +1,8 @@
 package guava.ext.source;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
+import com.google.common.base.*;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.io.CharSource;
@@ -10,18 +10,19 @@ import com.google.common.io.CharSource;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
 
 /**
  * Extension to CharSource for "Object" source, which is sourcing from CharSource.
- *
+ * <p/>
  * APIs are similar to CharSource adhere to "tell rather than ask", so that underlying reader close will not be
  * cluttered in client codes.
- *
+ * <p/>
  * In addition, FluentSource also provides common higher order functions for transformation, filtering...etc.
- *
+ * <p/>
  * Author:  Fred Deng
  */
 public abstract class FluentSource<T> {
@@ -45,20 +46,55 @@ public abstract class FluentSource<T> {
         return on(source, Pattern.compile(delimeter));
     }
 
-    public static FluentSource<String> byLines(final CharSource source) {
-        return on(source, "[\\n\\r]");
+    public static FluentSource<String> onLines(final CharSource lineSource) {
+        return on(lineSource, "[\\n\\r]");
+    }
+
+    public static FluentSource<Map<String, String>> onCsv(CharSource csvSource) {
+        FluentSource<String> lines = onLines(csvSource);
+        return lines.transform(new Supplier<Function<String, Map<String, String>>>() {
+            @Override
+            public Function<String, Map<String, String>> get() {
+                return new Function<String, Map<String, String>>() {
+                    List<String> headers;
+                    @Override
+                    public Map<String, String> apply(String input) {
+                        if(headers == null) {
+                            headers = split(input);
+                            return null;
+                        }
+                        return zip(headers, split(input));
+                    }
+
+                    private List<String> split(String input) {
+                        return Splitter.on(',').splitToList(input);
+                    }
+
+                    private Map<String, String> zip(List<String> headers, List<String> values) {
+                        if (headers.size() != values.size()) {
+                            throw new IllegalArgumentException("csv header and value size not matched at " + values);
+                        }
+                        ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
+                        for (int i = 0; i < headers.size(); i++) {
+                            builder.put(headers.get(i), values.get(i));
+                        }
+                        return builder.build();
+                    }
+                };
+            }
+        }).filter(Predicates.not(Predicates.<Map<String, String>>isNull()));
     }
 
     public abstract CloseableIterator<T> openIterator();
 
-    public List<T> readAll(){
-        try(CloseableIterator<T> iter = openIterator()){
+    public List<T> readAll() {
+        try (CloseableIterator<T> iter = openIterator()) {
             return ImmutableList.copyOf(iter);
         }
     }
 
     public <R> R readAll(SourceProcessor<T, R> processor) {
-        try(CloseableIterator<T> iter = openIterator()) {
+        try (CloseableIterator<T> iter = openIterator()) {
             while (iter.hasNext()) {
                 processor.process(iter.next());
             }
@@ -67,13 +103,17 @@ public abstract class FluentSource<T> {
     }
 
     public <T2> FluentSource<T2> transform(final Function<T, T2> function) {
+        return transform(Suppliers.ofInstance(function));
+    }
+
+    public <T2> FluentSource<T2> transform(final Supplier<Function<T, T2>> functionSupplier) {
         return new FluentSource<T2>() {
             @Override
             public CloseableIterator<T2> openIterator() {
+                Function<T, T2> function = functionSupplier.get();
                 CloseableIterator<T> origIter = origIter();
                 return new CloseableIteratorAdaptor<>(Iterators.transform(origIter, function), origIter);
             }
-
         };
     }
 
@@ -98,7 +138,7 @@ public abstract class FluentSource<T> {
     }
 
     public static <T> FluentSource<T> concat(final Iterable<FluentSource<? extends T>> sources) {
-        return new FluentSource<T>(){
+        return new FluentSource<T>() {
 
             @Override
             public CloseableIterator<T> openIterator() {
@@ -108,7 +148,7 @@ public abstract class FluentSource<T> {
         };
     }
 
-    private static class ToAutoClosingIterator<T> implements Function<FluentSource<? extends T>, CloseableIterator<T>>, AutoCloseable{
+    private static class ToAutoClosingIterator<T> implements Function<FluentSource<? extends T>, CloseableIterator<T>>, AutoCloseable {
         private final List<AutoCloseable> opened = Lists.newArrayList();
         private boolean closed = false;
 
@@ -119,7 +159,7 @@ public abstract class FluentSource<T> {
                 try {
                     closeable.close();
                 } catch (Exception e) {
-                    if(ex == null) ex = e;
+                    if (ex == null) ex = e;
                 }
             }
             if (ex != null) {
