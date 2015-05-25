@@ -37,7 +37,7 @@ The following example demonstrate reading a csv char source and transforming int
 
                 FluentSource.onCsv(CharSource.wrap("a,b,c\n1,2,3")) //marshall into source of a single Map ["a":"1", "b":"2", "c":"3"]
                 
-More detailed examples available [here](src\test\guava\ext\source\FluentSourceExample.java)
+More detailed examples available [here](https://github.com/freddfy/FluentSource/blob/master/src/test/guava/ext/source/FluentSourceExample.java)
 
 ## Motivation
 The character stream in CharSource is usually too low level for coding business logic - we usually marshall them into
@@ -49,4 +49,4 @@ Also FluentSource adheres to the same
 the underlying Reader(Closeable) would not have to be cluttered in client usage.
 
 ## API Reference
-All useful APIs in [FluentSource](src/main/FluentSource.java), requires JDK 1.6 or higher.
+All useful APIs in [FluentSource](https://github.com/freddfy/FluentSource/blob/master/src/main/FluentSource.java), requires JDK 1.6 or higher.
