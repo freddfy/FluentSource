@@ -49,4 +49,4 @@ Also FluentSource adheres to the same
 the underlying Reader(Closeable) would not have to be cluttered in client usage.
 
 ## API Reference
-All useful APIs in [FluentSource](https://github.com/freddfy/FluentSource/blob/master/src/main/FluentSource.java), requires JDK 1.6 or higher.
+All useful APIs in [FluentSource](https://github.com/freddfy/FluentSource/blob/master/src/main/guava/ext/source/FluentSource.java), requires JDK 1.6 or higher.
