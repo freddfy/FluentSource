@@ -5,38 +5,40 @@ FluentSource is a Fluent API for marshalling [Guava CharSource]
 ## Code Examples
 The following example demonstrate reading a char source and then transform into a integer source, and filter out the 
 odd numbers then calculate the sum.
+```java
+int sumOfEven = FluentSource.on(CharSource.wrap("1,2,3,4,5"), ",")
+.transform(new Function<String, Integer>() {
+    @Override
+    public Integer apply(String input) {
+        return Integer.valueOf(input);
+    }
+})
+.filter(new Predicate<Integer>() {
+    @Override
+    public boolean apply(Integer input) {
+        return input % 2 == 0;
+    }
+})
+.readAll(new SourceProcessor<Integer, Integer>() {
+    private int sum;
 
-               int sumOfEven = FluentSource.on(CharSource.wrap("1,2,3,4,5"), ",")
-                .transform(new Function<String, Integer>() {
-                    @Override
-                    public Integer apply(String input) {
-                        return Integer.valueOf(input);
-                    }
-                })
-                .filter(new Predicate<Integer>() {
-                    @Override
-                    public boolean apply(Integer input) {
-                        return input % 2 == 0;
-                    }
-                })
-                .readAll(new SourceProcessor<Integer, Integer>() {
-                    private int sum;
+    @Override
+    public void process(Integer input) {
+        this.sum += input;
+    }
 
-                    @Override
-                    public void process(Integer input) {
-                        this.sum += input;
-                    }
-
-                    @Override
-                    public Integer getResult() {
-                        return sum;
-                    }
-                }); //6
+    @Override
+    public Integer getResult() {
+        return sum;
+    }
+}); //6
+```
                 
 The following example demonstrate reading a csv char source and transforming into a Map source
-
-                FluentSource.onCsv(CharSource.wrap("a,b,c\n1,2,3")) //marshall into source of a single Map ["a":"1", "b":"2", "c":"3"]
-                
+```java
+//marshall into source of a single Map ["a":"1", "b":"2", "c":"3"]
+FluentSource.onCsv(CharSource.wrap("a,b,c\n1,2,3"))
+```                
 More detailed examples available [here](https://github.com/freddfy/FluentSource/blob/master/src/test/guava/ext/source/FluentSourceExample.java)
 
 ## Motivation
