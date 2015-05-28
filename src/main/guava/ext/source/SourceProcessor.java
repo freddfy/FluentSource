@@ -6,6 +6,11 @@ package guava.ext.source;
  * Author:  Fred Deng
  */
 public interface SourceProcessor<T, R> {
-    void process(T input);
+    /**
+     *
+     * @return true if continue processing needed, false if no more processing needed
+     */
+    boolean process(T input);
+
     R getResult();
 }

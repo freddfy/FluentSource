@@ -103,9 +103,7 @@ public abstract class FluentSource<T> {
         CloseableIterator<T> iter = null;
         try{
             iter = openIterator();
-            while (iter.hasNext()) {
-                processor.process(iter.next());
-            }
+            while (iter.hasNext() && processor.process(iter.next())) {}
         } finally {
             if (iter != null) {
                 iter.close();

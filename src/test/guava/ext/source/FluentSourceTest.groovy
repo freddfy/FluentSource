@@ -50,7 +50,7 @@ class FluentSourceTest {
         assert 6 == FluentSource.onLines(srcOf('1\n2\n3\n')).transform(toInteger()).readAll(new SourceProcessor<Integer, Integer>() {
             int sum = 0;
             @Override
-            void process(Integer input) {
+            boolean process(Integer input) {
                 sum += input
             }
 
@@ -60,6 +60,23 @@ class FluentSourceTest {
             }
         })
     }
+
+    @Test
+    public void "will stop processing when source processor returns false"() throws Exception {
+        assert 3 == FluentSource.onLines(srcOf('1\n2\n3\n')).transform(toInteger()).readAll(new SourceProcessor<Integer, Integer>() {
+            int sumCappedBy3 = 0;
+            @Override
+            boolean process(Integer input) {
+                (sumCappedBy3 += input) < 3
+            }
+
+            @Override
+            Integer getResult() {
+                sumCappedBy3
+            }
+        })
+    }
+
 
     private static CharSource srcOf(String lines) {
         CharSource.wrap(lines)
@@ -112,4 +129,5 @@ class FluentSourceTest {
         assert ['a', '', 'b', '', 'c'] == FluentSource.on(srcOf('a, b, c'), ~/[,\s]/).readAll()
         assert [' ',' '] == FluentSource.on(srcOf('a, b, c'), ~/\S+/).readAll()
     }
+
 }

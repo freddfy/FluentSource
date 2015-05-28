@@ -41,8 +41,9 @@ public class FluentSourceExample {
             private int sum;
 
             @Override
-            public void process(Integer input) {
+            public boolean process(Integer input) {
                 this.sum += input;
+                return true;
             }
 
             @Override
