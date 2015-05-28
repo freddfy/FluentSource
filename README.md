@@ -23,8 +23,9 @@ int sumOfEven = FluentSource.on(CharSource.wrap("1,2,3,4,5"), ",")
         private int sum;
     
         @Override
-        public void process(Integer input) {
+        public boolean process(Integer input) {
             this.sum += input;
+            return true;
         }
     
         @Override
